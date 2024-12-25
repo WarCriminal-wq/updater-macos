@@ -1,0 +1,428 @@
+#!/bin/bash
+# definitely not POIX compliant but who cares, nothing is anymore.
+banner(){
+  echo "██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗██████╗ "
+  echo "██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗"
+  echo "██║   ██║██████╔╝██║  ██║███████║   ██║   █████╗  ██████╔╝"
+  echo "██║   ██║██╔═══╝ ██║  ██║██╔══██║   ██║   ██╔══╝  ██╔══██╗"
+  echo "╚██████╔╝██║     ██████╔╝██║  ██║   ██║   ███████╗██║  ██║"
+  echo " ╚═════╝ ╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝"
+  echo " Version 1.0                                   By Jonny L "
+}
+
+main(){ 
+    # ASTHETIC PURPOSES!!!
+    clear
+    banner
+    echo "================================================================"
+    echo "                     updater starting..."
+    echo "================================================================"
+    echo ""
+    echo -ne '##################                                         (33%)\r'
+    sleep 1
+    echo -ne '#############################################              (66%)\r'
+    sleep 1
+    echo -ne '###########################################################(100%)\r'
+    echo -ne '\n'
+    clear
+    landing 
+}
+
+landing(){
+  banner 
+  echo ""
+  echo -e "1) update brew               2) upgrade all packages"
+  echo -e "3) system info               4) network"
+  echo -e "5) configure brew"            
+  echo -e "6) install package(s)        7) uninstall package(s)"
+  echo -e "8) command summary           9) system performance"
+  echo -e "10) verify dependencies"
+  echo -e "E) exit"  
+  echo -e "Choose:"
+  read -e EPSTEIN
+  controls
+}
+
+controls(){
+  case $EPSTEIN in
+    "E" | "e")
+      clear
+      clear 
+      echo "Thanks for using UPDATER!"
+      exit 0
+      ;;
+    "1")
+      update_brew # updates apt
+      ;;
+    "2")
+      upgrade_packages # upgrades apt packages
+      ;;
+    "3")
+      system_info # displays system info
+      ;;
+    "4")
+      network_info 
+      ;;
+    "5")
+      configure_brew # configures brew (when porting to debian make it so that it edits debian repos in /etc/apt/sources.list.d/, when porting to fedora make it so that it configures through making a .repo file in /etc/yum.repos.d/ and then adds the repo through dnf config-manager --add-repo $REPOFILE)
+      ;;
+    "6")
+      install_packages
+      ;;
+    "7")
+      uninstall_packages
+      ;;
+    "8")
+      summary
+      ;;
+    "9")
+      system_performance
+      ;;
+    "10")
+      verify_install
+      ;;
+    *)
+      clear 
+      echo "INVALID INPUT"
+      sleep 2
+      clear
+      landing
+      ;;
+  esac
+}
+
+verify_install(){
+  clear
+  echo "Verifying dependencies..."
+
+  # List of required commands
+  dependencies=("brew" "fastfetch" "bmon" "termshark" "speedtest" "dialog" "tldr")
+
+  # Check each dependency
+  for cmd in "${dependencies[@]}"; do
+    if ! command -v $cmd &> /dev/null; then
+      echo "Dependency missing: $cmd"
+    else
+      echo "Dependency found: $cmd"
+    fi
+  done
+
+  return_to_landing
+}
+
+update_brew(){
+  clear 
+  brew update
+  return_to_landing
+}
+
+upgrade_packages(){
+  clear 
+  brew upgrade
+  return_to_landing
+}
+
+system_info(){
+  clear 
+  fastfetch
+  return_to_landing
+}
+
+network_info(){
+    clear 
+    echo "1) Real time speed (bmon)"
+    echo "2) view packets"
+    echo "3) test internet connection"
+    echo "4) speedtest"
+    echo "5) view network interfaces"
+    echo "E) return"
+    echo "Choose:"
+    read -e NETWORK 
+    case $NETWORK in
+        "E" | "e" )
+          clear
+          landing 
+          ;;
+        "1")
+          bmon 
+          clear
+          return_to_network
+          ;;
+        "2")
+          select_interface
+          clear
+          return_to_network
+          ;;
+        "3")
+          clear 
+          ping google.com
+          return_to_network
+          ;; 
+        "4")
+          clear 
+          speedtest 
+          return_to_network
+            ;;
+        "5")
+          clear 
+          clear
+          ifconfig
+          return_to_network
+          ;;  
+        *)
+            clear 
+            echo "INVALID INPUT"
+            sleep 2
+            clear
+            network_info
+            ;;
+    esac
+        
+}
+
+select_interface() {
+  # Get the list of network interfaces
+  interfaces=($(ifconfig -l))
+
+  options=()
+  for i in "${!interfaces[@]}"; do
+    options+=("$((i+1))" "${interfaces[i]}")
+  done
+
+  interface=$(dialog --clear --title "Select interface" --menu "Choose an option:" 15 40 7 "${options[@]}" 2>&1 >/dev/tty)
+
+  if [[ $? -eq 0 ]]; then
+    interface=${interfaces[$((interface-1))]}
+    clear
+    termshark -i=$interface
+  else
+    echo "Selection cancelled."
+  fi
+}
+
+configure_brew(){
+  clear 
+  echo "current Taps:"
+  brew tap-info --installed
+  echo "1) add tap       2) remove tap"
+  echo "E) exit"
+  read -e configure 
+  case $configure in
+    "E" | "e" )
+    clear 
+    echo "exiting..."
+    sleep 3
+    landing
+    ;;
+    "1" )
+    clear
+    clear
+    add_tap
+    ;;
+    "2" )
+    clear 
+    remove_tap
+    ;;
+  esac 
+
+}
+
+add_tap(){
+  echo "paste tap/repo link here:"
+  read -e tap
+  clear
+  clear
+  echo "repo to tap:"
+  brew tap-info $tap 
+  echo "confim:"
+  echo "yY) yes nN) no eE) exit"
+  read -e tap2
+  case $tap2 in
+    "y" | "Y" )
+    brew tap $tap 
+    ;;
+    "n" | "N" )
+    clear
+    clear
+    echo "aborting..."
+    sleep 2
+    add_tap
+    ;;
+    "e" | "E" )
+    clear
+    clear
+    echo "returning..."
+    sleep 2
+    clear
+    clear
+    configure_brew
+    ;;
+  esac
+}
+
+remove_tap(){
+  echo "choose:"
+  brew tap-info --installed
+  read -e tap
+  clear
+  clear
+  echo "repo to untap:"
+  brew tap-info $tap 
+  echo "confim:"
+  echo "yY) yes nN) no eE) exit"
+  read -e tap2
+  case $tap2 in
+    "y" | "Y" )
+    brew untap $tap 
+    ;;
+    "n" | "N" )
+    clear
+    clear
+    echo "aborting..."
+    sleep 2
+    add_tap
+    ;;
+    "e" | "E" )
+    clear
+    clear
+    echo "returning..."
+    sleep 2
+    clear
+    clear
+    configure_brew
+    ;;
+  esac
+}
+install_packages(){
+  clear 
+  clear 
+  echo "package to install:"
+  read -e install 
+  case $install in
+    "exit" )
+      clear
+      clear 
+      echo "aborting..."
+      sleep 1
+      clear
+      landing
+      ;;
+  esac 
+  clear
+  echo "to be installed:"
+  brew info $install 
+  read -e install2
+  case $install2 in
+    "y" | "Y" )
+    clear
+    brew install $tap 
+    echo "installed."
+    sleep 3
+    clear
+    landing
+    ;;
+    "n" | "N" )
+    clear
+    clear
+    echo "aborting..."
+    sleep 2
+    install_packages
+    ;;
+    "e" | "E" )
+    clear
+    clear
+    echo "returning..."
+    sleep 2
+    clear
+    clear
+    configure_brew
+    ;;
+  esac
+}
+
+uninstall_packages(){
+  clear 
+  clear 
+  echo "package to uninstall:"
+  read -e install 
+  case $install in
+    "exit" )
+      clear
+      clear 
+      echo "aborting..."
+      sleep 1
+      clear
+      landing
+      ;;
+  esac 
+  clear
+  echo "to be installed:"
+  brew info $install 
+  read -e install2
+  case $install2 in
+    "y" | "Y" )
+    clear
+    brew install $tap 
+    echo "installed."
+    sleep 3
+    clear
+    landing
+    ;;
+    "n" | "N" )
+    clear
+    clear
+    echo "aborting..."
+    sleep 2
+    uninstall_packages
+    ;;
+    "e" | "E" )
+    clear
+    clear
+    echo "returning..."
+    sleep 2
+    clear
+    clear
+    configure_brew
+    ;;
+  esac
+}
+
+summary(){
+  clear
+  echo "enter the command you want summarized"
+  read -e SUMMARY
+  clear
+  tldr $SUMMARY 
+  return_to_landing
+}
+
+system_performance(){
+  btop
+  clear
+  clear
+  return_to_landing 
+
+}
+
+return_to_landing(){
+  echo "press any key to return"
+  read -e DIDDY
+  case $DIDDY in 
+    *) 
+      clear 
+      landing 
+  esac
+}
+
+return_to_network(){
+  echo "press any key to return"
+  read -e NRETURN
+  case $NRETURN in 
+    *)
+      clear
+      network_info
+  esac
+}
+
+
+main
