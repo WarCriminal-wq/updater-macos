@@ -335,7 +335,7 @@ install_packages(){
     sleep 2
     clear
     clear
-    configure_brew
+    install_packages
     ;;
   esac
 }
@@ -382,7 +382,7 @@ uninstall_packages(){
     sleep 2
     clear
     clear
-    configure_brew
+    uninstall_packages
     ;;
   esac
 }
