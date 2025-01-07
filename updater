@@ -345,6 +345,7 @@ install_packages(){
 uninstall_packages(){
   clear 
   clear 
+  echo "Type 'exit' to quit."
   echo "package to uninstall:"
   read -e install 
   echo "yY) yes nN) no
