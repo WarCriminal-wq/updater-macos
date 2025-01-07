@@ -296,6 +296,7 @@ remove_tap(){
 install_packages(){
   clear 
   clear 
+  echo "Type 'exit' to return."
   echo "package to install:"
   read -e install 
   case $install in
@@ -311,6 +312,7 @@ install_packages(){
   clear
   echo "to be installed:"
   brew info $install 
+  echo " yY) yes nN) no
   read -e install2
   case $install2 in
     "y" | "Y" )
@@ -345,6 +347,7 @@ uninstall_packages(){
   clear 
   echo "package to uninstall:"
   read -e install 
+  echo "yY) yes nN) no
   case $install in
     "exit" )
       clear
