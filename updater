@@ -317,7 +317,7 @@ install_packages(){
   case $install2 in
     "y" | "Y" )
     clear
-    brew install $tap || install_failed
+    brew install $install || install_failed
     echo "installed."
     sleep 3
     clear
