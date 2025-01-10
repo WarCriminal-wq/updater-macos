@@ -317,7 +317,7 @@ install_packages(){
   case $install2 in
     "y" | "Y" )
     clear
-    brew install $tap 
+    brew install $tap || install_failed
     echo "installed."
     sleep 3
     clear
@@ -342,6 +342,12 @@ install_packages(){
   esac
 }
 
+install_failed(){
+echo "install failed."
+sleep 3
+clear
+landing
+}
 uninstall_packages(){
   clear 
   clear 
@@ -366,7 +372,7 @@ uninstall_packages(){
   case $install2 in
     "y" | "Y" )
     clear
-    brew install $tap 
+    brew install $install || uninstall_failed 
     echo "installed."
     sleep 3
     clear
@@ -389,6 +395,13 @@ uninstall_packages(){
     uninstall_packages
     ;;
   esac
+}
+
+uninstall_failed(){
+echo "install failed."
+sleep 3
+clear
+landing
 }
 
 summary(){
